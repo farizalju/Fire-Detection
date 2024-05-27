@@ -21,7 +21,6 @@ app_mode = st.sidebar.selectbox('Choose the App Mode', ['About App', 'Run on Ima
 if app_mode == 'About App':
     st.subheader("About")
     st.markdown("<h5>This is the Fire Detection App created with custom trained models using YoloV5</h5>", unsafe_allow_html=True)
-    
     st.markdown("- <h5>Select the App Mode in the SideBar</h5>", unsafe_allow_html=True)
     st.image("Images/first_1.png")
     st.markdown("- <h5>Upload the Image and Detect the Fires in Images</h5>", unsafe_allow_html=True)
@@ -32,7 +31,6 @@ if app_mode == 'About App':
     st.image("Images/fourth_4.png")
     st.markdown("- <h5>Click Start to start the camera</h5>", unsafe_allow_html=True)
     st.markdown("- <h5>Click Stop to stop the camera</h5>", unsafe_allow_html=True)
-    
     st.markdown("""
                 ## Features
 - Detect on Image
@@ -113,16 +111,15 @@ if app_mode == 'Run on WebCam':
     st.subheader("Output")
     stframe = st.empty()
     
-    run = st.sidebar.button("Start")
+    start = st.sidebar.button("Start")
     stop = st.sidebar.button("Stop")
     st.sidebar.markdown("---")
     
-    cam = cv2.VideoCapture(0)
-    model = load_model()
-    
-    if run:
-        stop_signal = False
-        while not stop_signal:
+    if start:
+        cam = cv2.VideoCapture(0)
+        model = load_model()
+        
+        while True:
             ret, frame = cam.read()
             if not ret:
                 st.error("Failed to capture image from webcam.")
@@ -133,6 +130,7 @@ if app_mode == 'Run on WebCam':
             output = np.squeeze(results.render())
             text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
             stframe.image(output)
+            
             if stop:
-                stop_signal = True
                 cam.release()
+                break
