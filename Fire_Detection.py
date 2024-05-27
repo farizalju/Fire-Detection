@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from PIL import Image
 import tempfile
+import time
 
 @st.cache_resource
 def load_model():
