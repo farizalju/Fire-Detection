@@ -126,15 +126,18 @@ if app_mode == 'Run on WebCam':
     st.sidebar.markdown("---")
     
     cam = cv2.VideoCapture(0)
-    if(run):
-        while(True):
-            if(stop):
-                break
-            ret,frame = cam.read()
-            frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-            model = load_model()
+    model = load_model()  # Load the model outside the loop
+
+    if run:
+        stop = False  # Ensure stop is set to False initially
+        while not stop:  # Loop until stop button is clicked
+            ret, frame = cam.read()
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = model(frame)
             length = len(results.xyxy[0])
             output = np.squeeze(results.render())
-            text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
             stframe.image(output)
+            
+            # Update detected fire count
+            text.markdown(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
+
