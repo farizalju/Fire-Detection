@@ -113,24 +113,28 @@ if app_mode == 'Run on WebCam':
     
     start = st.sidebar.button("Start")
     stop = st.sidebar.button("Stop")
-    st.sidebar.markdown("---")
     
+    camera_source = st.sidebar.selectbox("Select Camera Source", ["Default Camera", "External Camera"])
+
     if start:
-        cam = cv2.VideoCapture(0)
-        model = load_model()
-        
-        while True:
-            ret, frame = cam.read()
-            if not ret:
-                st.error("Failed to capture image from webcam.")
-                break
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            results = model(frame)
-            length = len(results.xyxy[0])
-            output = np.squeeze(results.render())
-            text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
-            stframe.image(output)
-            
-            if stop:
-                cam.release()
-                break
+        cam_index = 0 if camera_source == "Default Camera" else 1
+        cam = cv2.VideoCapture(cam_index)
+        if not cam.isOpened():
+            st.error(f"Failed to open camera {cam_index}.")
+        else:
+            model = load_model()
+            while cam.isOpened():
+                ret, frame = cam.read()
+                if not ret:
+                    st.error("Failed to capture image from webcam.")
+                    break
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                results = model(frame)
+                length = len(results.xyxy[0])
+                output = np.squeeze(results.render())
+                text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
+                stframe.image(output)
+                
+                if stop:
+                    cam.release()
+                    break
