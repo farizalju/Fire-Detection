@@ -16,7 +16,7 @@ demo_video = "footage.mp4"
 st.title('Fire Detection')
 st.sidebar.title('App Mode')
 
-app_mode = st.sidebar.selectbox('Choose the App Mode', ['About App', 'Run on Image', 'Run on Video', 'Run on WebCam'])
+app_mode = st.sidebar.selectbox('Choose the App Mode', ['About App', 'Run on Image', 'Run on Video'])
 
 if app_mode == 'About App':
     st.subheader("About")
@@ -87,6 +87,10 @@ if app_mode == 'Run on Video':
     st.sidebar.video(tffile.name)
     
     model = load_model()
+    
+    fps = int(vid.get(cv2.CAP_PROP_FPS))
+    frame_time = 1.0 / fps
+
     while vid.isOpened():
         ret, frame = vid.read()
         if not ret:
@@ -97,3 +101,7 @@ if app_mode == 'Run on Video':
         output = np.squeeze(results.render())
         text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
         stframe.image(output)
+        
+        time.sleep(frame_time)
+    
+    vid.release()
