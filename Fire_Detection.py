@@ -123,6 +123,7 @@ if app_mode == 'Run on WebCam':
             st.error(f"Failed to open camera {cam_index}.")
         else:
             model = load_model()
+            stop_button = st.sidebar.button("Stop", key="stop_button")
             while cam.isOpened():
                 ret, frame = cam.read()
                 if not ret:
@@ -134,7 +135,7 @@ if app_mode == 'Run on WebCam':
                 output = np.squeeze(results.render())
                 text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
                 stframe.image(output)
-                
-                if stop:
+
+                if stop_button:
                     cam.release()
                     break
