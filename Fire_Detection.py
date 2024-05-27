@@ -11,7 +11,7 @@ def load_model():
     return model
 
 demo_img = "fire.9.png"
-demo_video = "Fire_Video.mp4"
+demo_video = "footage.mp4"
 
 st.title('Fire Detection')
 st.sidebar.title('App Mode')
@@ -27,10 +27,6 @@ if app_mode == 'About App':
     st.image("Images/second_2.png")
     st.markdown("- <h5>Upload the Video and Detect the fires in Videos</h5>", unsafe_allow_html=True)
     st.image("Images/third_3.png")
-    st.markdown("- <h5>Live Detection</h5>", unsafe_allow_html=True)
-    st.image("Images/fourth_4.png")
-    st.markdown("- <h5>Click Start to start the camera</h5>", unsafe_allow_html=True)
-    st.markdown("- <h5>Click Stop to stop the camera</h5>", unsafe_allow_html=True)
     st.markdown("""
                 ## Features
 - Detect on Image
@@ -101,41 +97,3 @@ if app_mode == 'Run on Video':
         output = np.squeeze(results.render())
         text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
         stframe.image(output)
-
-if app_mode == 'Run on WebCam':
-    st.subheader("Detected Fire:")
-    text = st.markdown("")
-    
-    st.sidebar.markdown("---")
-    
-    st.subheader("Output")
-    stframe = st.empty()
-    
-    start = st.sidebar.button("Start")
-    stop = st.sidebar.button("Stop")
-    
-    camera_source = st.sidebar.selectbox("Select Camera Source", ["Default Camera", "External Camera"])
-
-    if start:
-        cam_index = 0 if camera_source == "Default Camera" else 1
-        cam = cv2.VideoCapture(cam_index)
-        if not cam.isOpened():
-            st.error(f"Failed to open camera {cam_index}.")
-        else:
-            model = load_model()
-            stop_button = st.sidebar.button("Stop", key="stop_button")
-            while cam.isOpened():
-                ret, frame = cam.read()
-                if not ret:
-                    st.error("Failed to capture image from webcam.")
-                    break
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                results = model(frame)
-                length = len(results.xyxy[0])
-                output = np.squeeze(results.render())
-                text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
-                stframe.image(output)
-
-                if stop_button:
-                    cam.release()
-                    break
