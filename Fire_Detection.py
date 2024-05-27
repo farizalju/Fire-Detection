@@ -90,7 +90,7 @@ if app_mode == 'Run on Video':
     model = load_model()
     
     fps = int(vid.get(cv2.CAP_PROP_FPS))
-    frame_time = 1.0 / fps
+    frame_time = 30.0 / fps
 
     while vid.isOpened():
         ret, frame = vid.read()
