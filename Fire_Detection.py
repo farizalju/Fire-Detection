@@ -8,7 +8,7 @@ import time
 
 @st.cache_resource
 def load_model():
-    model = torch.hub.load('ultralytics/yolov5', 'custom', path="weights/last.pt", force_reload=True)
+    model = torch.hub.load('ultralytics/yolov8', 'custom', path="weights/last.pt", force_reload=True)
     return model
 
 demo_img = "fire.9.png"
@@ -21,7 +21,7 @@ app_mode = st.sidebar.selectbox('Choose the App Mode', ['About App', 'Run on Ima
 
 if app_mode == 'About App':
     st.subheader("About")
-    st.markdown("<h5>This is the Fire Detection App created with custom trained models using YoloV5</h5>", unsafe_allow_html=True)
+    st.markdown("<h5>This is the Fire Detection App created with custom trained models using YOLOV8n</h5>", unsafe_allow_html=True)
     st.markdown("- <h5>Select the App Mode in the SideBar</h5>", unsafe_allow_html=True)
     st.image("Images/first_1.png")
     st.markdown("- <h5>Upload the Image and Detect the Fires in Images</h5>", unsafe_allow_html=True)
@@ -38,7 +38,7 @@ if app_mode == 'About App':
 - PyTorch
 - Python CV
 - Streamlit
-- YoloV5
+- YOLOV8n
 """)
 
 if app_mode == 'Run on Image':
