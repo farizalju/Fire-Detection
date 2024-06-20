@@ -1,4 +1,5 @@
 import streamlit as st
+from ultralytics import YOLO
 import cv2
 import numpy as np
 import av
@@ -8,7 +9,7 @@ from PIL import Image
 
 @st.cache_resource
 def load_model():
-    model = torch.hub.load('ultralytics/yolov5','custom',path="weights/last.pt",force_reload=True)
+    model = YOLO("weights/best.pt")
     return model
 
 demo_img = "fire.9.png"
