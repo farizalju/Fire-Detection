@@ -12,17 +12,18 @@ def load_model():
     return model
 
 demo_img = "fire.9.png"
-demo_video = "withfire.mp4"
+demo_video = "Fire_Video.mp4"
 
 st.title('Fire Detection')
 st.sidebar.title('App Mode')
 
+
 app_mode = st.sidebar.selectbox('Choose the App Mode',
-                                ['About App','Run on Image','Run on Video'])
+                                ['About App','Run on Image','Run on Video','Run on WebCam'])
 
 if app_mode == 'About App':
     st.subheader("About")
-    st.markdown("<h5>This is the Fire Detection App created with custom trained models using YoloV8</h5>",unsafe_allow_html=True)
+    st.markdown("<h5>This is the Fire Detection App created with custom trained models using YOLO</h5>",unsafe_allow_html=True)
     
     st.markdown("- <h5>Select the App Mode in the SideBar</h5>",unsafe_allow_html=True)
     st.image("Images/first_1.png")
@@ -30,18 +31,11 @@ if app_mode == 'About App':
     st.image("Images/second_2.png")
     st.markdown("- <h5>Upload the Video and Detect the fires in Videos</h5>",unsafe_allow_html=True)
     st.image("Images/third_3.png")
-    
     st.markdown("""
                 ## Features
 - Detect on Image
 - Detect on Videos
 - Live Detection
-## Tech Stack
-- Python
-- PyTorch
-- Python CV
-- Streamlit
-- YoloV8
 """)
     
 
@@ -67,10 +61,6 @@ if app_mode == 'Run on Image':
     length = len(results.xyxy[0])
     output = np.squeeze(results.render())
     text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
-    
-    if length > 0:
-        st.warning('Alert! Fire detected in the image!')
-    
     st.subheader("Output Image")
     st.image(output,use_column_width=True)
     
@@ -83,7 +73,7 @@ if app_mode == 'Run on Video':
     st.subheader("Output")
     stframe = st.empty()
     
-    # Input for Video
+    #Input for Video
     video_file = st.sidebar.file_uploader("Upload a Video",type=['mp4','mov','avi','asf','m4v'])
     st.sidebar.markdown("---")
     tffile = tempfile.NamedTemporaryFile(delete=False)
@@ -109,8 +99,4 @@ if app_mode == 'Run on Video':
         length = len(results.xyxy[0])
         output = np.squeeze(results.render())
         text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
-        
-        if length > 0:
-            st.warning('Alert! Fire detected in the video frame!')
-        
         stframe.image(output)
