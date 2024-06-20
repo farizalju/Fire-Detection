@@ -11,6 +11,7 @@ def main():
 
     # Upload image
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("Choose a video...", type=["mp4", "mov", "avi", "mkv"])
 
     if uploaded_file is not None:
         # Convert the file to an OpenCV image.
