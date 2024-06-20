@@ -1,6 +1,5 @@
 av
 yolov5
-opencv_python_headless
 streamlit
 numpy
 Pillow
@@ -16,3 +15,6 @@ pandas
 seaborn
 streamlit-webrtc
 IPython
+opencv-python-headless
+ultralytics
+cvzone
