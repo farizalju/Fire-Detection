@@ -1,14 +1,14 @@
 import streamlit as st
+from ultralytics import YOLO
 import cv2
 import numpy as np
-import torch
 from PIL import Image
 import tempfile
 import time
 
 @st.cache_resource
 def load_model():
-    model = torch.hub.load('ultralytics/yolov5', 'custom', path="weights/best.pt", force_reload=True)
+    model = YOLO('/model/yolov8n.pt')  # Load the YOLOv8n model
     return model
 
 demo_img = "fire.9.png"
@@ -57,9 +57,9 @@ if app_mode == 'Run on Image':
     st.sidebar.image(image)
     
     model = load_model()
-    results = model(image)
-    length = len(results.xyxy[0])
-    output = np.squeeze(results.render())
+    results = model(image)  # Run inference
+    length = len(results[0].boxes)  # Number of detections
+    output = results[0].plot()  # Render the image with detections
     text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
     st.subheader("Output Image")
     st.image(output, use_column_width=True)
@@ -98,8 +98,8 @@ if app_mode == 'Run on Video':
             break
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = model(frame)
-        length = len(results.xyxy[0])
-        output = np.squeeze(results.render())
+        length = len(results[0].boxes)  # Number of detections
+        output = results[0].plot()  # Render the frame with detections
         text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
         stframe.image(output)
         
