@@ -1,144 +1,52 @@
 import streamlit as st
+from ultralytics import YOLO
+import cvzone
 import cv2
+import math
 import numpy as np
-import av
-import torch
-import tempfile
-from PIL import Image
 
-@st.cache_resource
-def load_model():
-    model = torch.hub.load('ultralytics/yolov5','custom',path="weights/last.pt",force_reload=True)
-    return model
+# Define the Streamlit app
+def main():
+    st.title("Fire and Smoke Detection")
 
-demo_img = "fire.9.png"
-demo_video = "Fire_Video.mp4"
+    # Upload image
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
-st.title('Fire Detection')
-st.sidebar.title('App Mode')
+    if uploaded_file is not None:
+        # Convert the file to an OpenCV image.
+        file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+        frame = cv2.imdecode(file_bytes, 1)
 
+        # Display the uploaded image.
+        st.image(frame, channels="BGR")
 
-app_mode = st.sidebar.selectbox('Choose the App Mode',
-                                ['About App','Run on Image','Run on Video','Run on WebCam'])
+        # Load the model
+        model = YOLO('weights/best.pt')
+        classnames = ['fire', 'smoke']
 
-if app_mode == 'About App':
-    st.subheader("About")
-    st.markdown("<h5>This is the Fire Detection App created with custom trained models using YoloV5</h5>",unsafe_allow_html=True)
-    
-    st.markdown("- <h5>Select the App Mode in the SideBar</h5>",unsafe_allow_html=True)
-    st.image("Images/first_1.png")
-    st.markdown("- <h5>Upload the Image and Detect the Fires in Images</h5>",unsafe_allow_html=True)
-    st.image("Images/second_2.png")
-    st.markdown("- <h5>Upload the Video and Detect the fires in Videos</h5>",unsafe_allow_html=True)
-    st.image("Images/third_3.png")
-    st.markdown("- <h5>Live Detection</h5>",unsafe_allow_html=True)
-    st.image("Images/fourth_4.png")
-    st.markdown("- <h5>Click Start to start the camera</h5>",unsafe_allow_html=True)
-    st.markdown("- <h5>Click Stop to stop the camera</h5>",unsafe_allow_html=True)
-    
-    st.markdown("""
-                ## Features
-- Detect on Image
-- Detect on Videos
-- Live Detection
-## Tech Stack
-- Python
-- PyTorch
-- Python CV
-- Streamlit
-- YoloV5
-## 🔗 Links
-[![portfolio](https://img.shields.io/badge/my_portfolio-000?style=for-the-badge&logo=ko-fi&logoColor=white)](https://antrosafin.netlify.app)
-[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/antro-safin-m)
-[![twitter](https://img.shields.io/badge/Github-1DA1F2?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AntroSafin)
-""")
-    
+        # Run detection
+        frame = cv2.resize(frame, (640, 480))
+        result = model(frame, stream=True)
 
-if app_mode == 'Run on Image':
-    st.subheader("Detected Fire:")
-    text = st.markdown("")
-    
-    st.sidebar.markdown("---")
-    # Input for Image
-    img_file = st.sidebar.file_uploader("Upload an Image",type=["jpg","jpeg","png"])
-    if img_file:
-        image = np.array(Image.open(img_file))
-    else:
-        image = np.array(Image.open(demo_img))
-        
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("**Original Image**")
-    st.sidebar.image(image)
-    
-    # predict the image
-    model = load_model()
-    results = model(image)
-    length = len(results.xyxy[0])
-    output = np.squeeze(results.render())
-    text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
-    st.subheader("Output Image")
-    st.image(output,use_column_width=True)
-    
-if app_mode == 'Run on Video':
-    st.subheader("Detected Fire:")
-    text = st.markdown("")
-    
-    st.sidebar.markdown("---")
-    
-    st.subheader("Output")
-    stframe = st.empty()
-    
-    #Input for Video
-    video_file = st.sidebar.file_uploader("Upload a Video",type=['mp4','mov','avi','asf','m4v'])
-    st.sidebar.markdown("---")
-    tffile = tempfile.NamedTemporaryFile(delete=False)
-    
-    if not video_file:
-        vid = cv2.VideoCapture(demo_video)
-        tffile.name = demo_video
-    else:
-        tffile.write(video_file.read())
-        vid = cv2.VideoCapture(tffile.name)
-    
-    st.sidebar.markdown("**Input Video**")
-    st.sidebar.video(tffile.name)
-    
-    # predict the video
-    while vid.isOpened():
-        ret, frame = vid.read()
-        if not ret:
-            break
-        frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-        model = load_model()
-        results = model(frame)
-        length = len(results.xyxy[0])
-        output = np.squeeze(results.render())
-        text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
-        stframe.image(output)
-        
-if app_mode == 'Run on WebCam':
-    st.subheader("Detected Fire:")
-    text = st.markdown("")
-    
-    st.sidebar.markdown("---")
-    
-    st.subheader("Output")
-    stframe = st.empty()
-    
-    run = st.sidebar.button("Start")
-    stop = st.sidebar.button("Stop")
-    st.sidebar.markdown("---")
-    
-    cam = cv2.VideoCapture(0)
-    if(run):
-        while(True):
-            if(stop):
-                break
-            ret,frame = cam.read()
-            frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-            model = load_model()
-            results = model(frame)
-            length = len(results.xyxy[0])
-            output = np.squeeze(results.render())
-            text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
-            stframe.image(output)
+        for info in result:
+            boxes = info.boxes
+            for box in boxes:
+                confidence = box.conf[0]
+                confidence = math.ceil(confidence * 100)
+                Class = int(box.cls[0])
+                if confidence > 50:
+                    x1, y1, x2, y2 = box.xyxy[0]
+                    x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                    color = (0, 0, 255) if classnames[Class] == 'fire' else (255, 0, 0)
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 5)
+                    cvzone.putTextRect(frame, f'{classnames[Class]} {confidence}%', [x1 + 8, y1 + 100],
+                                       scale=1.5, thickness=2)
+
+        # Convert the frame to RGB format for displaying in Streamlit
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Display the frame with detections in the Streamlit app
+        st.image(frame, channels="RGB")
+
+if __name__ == "__main__":
+    main()
