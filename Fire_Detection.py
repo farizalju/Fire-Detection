@@ -12,14 +12,14 @@ def load_model():
     return model
 
 demo_img = "fire.9.png"
-demo_video = "Fire_Video.mp4"
+demo_video = "withfire.mp4"
 
 st.title('Fire Detection')
 st.sidebar.title('App Mode')
 
 
 app_mode = st.sidebar.selectbox('Choose the App Mode',
-                                ['About App','Run on Image','Run on Video','Run on WebCam'])
+                                ['About App','Run on Image','Run on Video'])
 
 if app_mode == 'About App':
     st.subheader("About")
@@ -61,6 +61,8 @@ if app_mode == 'Run on Image':
     length = len(results.xyxy[0])
     output = np.squeeze(results.render())
     text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
+    if length > 0:
+        st.warning('Alert! Fire detected in the image!')
     st.subheader("Output Image")
     st.image(output,use_column_width=True)
     
@@ -99,4 +101,6 @@ if app_mode == 'Run on Video':
         length = len(results.xyxy[0])
         output = np.squeeze(results.render())
         text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
+        if length > 0:
+            st.warning('Alert! Fire detected in the image!')
         stframe.image(output)
