@@ -1,13 +1,14 @@
 import streamlit as st
-from PIL import Image
 import cv2
 import numpy as np
+import av
+import torch
 import tempfile
-from ultralytics import YOLO
+from PIL import Image
 
-@st.cache(allow_output_mutation=True)
+@st.cache_resource
 def load_model():
-    model = YOLO("weights/best.pt")
+    model = torch.hub.load('ultralytics/yolov5','custom',path="weights/last.pt",force_reload=True)
     return model
 
 demo_img = "fire.9.png"
@@ -16,18 +17,19 @@ demo_video = "withfire.mp4"
 st.title('Fire Detection')
 st.sidebar.title('App Mode')
 
+
 app_mode = st.sidebar.selectbox('Choose the App Mode',
-                                ['About App', 'Run on Image', 'Run on Video'])
+                                ['About App','Run on Image','Run on Video'])
 
 if app_mode == 'About App':
     st.subheader("About")
-    st.markdown("<h5>This is the Fire Detection App created with custom trained models using YOLOv8</h5>", unsafe_allow_html=True)
+    st.markdown("<h5>This is the Fire Detection App created with custom trained models using YoloV8</h5>",unsafe_allow_html=True)
     
-    st.markdown("- <h5>Select the App Mode in the SideBar</h5>", unsafe_allow_html=True)
+    st.markdown("- <h5>Select the App Mode in the SideBar</h5>",unsafe_allow_html=True)
     st.image("Images/first_1.png")
-    st.markdown("- <h5>Upload the Image and Detect the Fires in Images</h5>", unsafe_allow_html=True)
+    st.markdown("- <h5>Upload the Image and Detect the Fires in Images</h5>",unsafe_allow_html=True)
     st.image("Images/second_2.png")
-    st.markdown("- <h5>Upload the Video and Detect the fires in Videos</h5>", unsafe_allow_html=True)
+    st.markdown("- <h5>Upload the Video and Detect the fires in Videos</h5>",unsafe_allow_html=True)
     st.image("Images/third_3.png")
     
     st.markdown("""
@@ -40,7 +42,7 @@ if app_mode == 'About App':
 - PyTorch
 - Python CV
 - Streamlit
-- YOLOv8
+- YoloV8
 """)
     
 
@@ -50,7 +52,7 @@ if app_mode == 'Run on Image':
     
     st.sidebar.markdown("---")
     # Input for Image
-    img_file = st.sidebar.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
+    img_file = st.sidebar.file_uploader("Upload an Image",type=["jpg","jpeg","png"])
     if img_file:
         image = np.array(Image.open(img_file))
     else:
@@ -60,14 +62,14 @@ if app_mode == 'Run on Image':
     st.sidebar.markdown("**Original Image**")
     st.sidebar.image(image)
     
-    # Predict the image
+    # predict the image
     model = load_model()
     results = model(image)
-    length = len(results.pred[0])
+    length = len(results.xyxy[0])
     output = np.squeeze(results.render())
-    text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
+    text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
     st.subheader("Output Image")
-    st.image(output, use_column_width=True)
+    st.image(output,use_column_width=True)
     
 if app_mode == 'Run on Video':
     st.subheader("Detected Fire:")
@@ -78,8 +80,8 @@ if app_mode == 'Run on Video':
     st.subheader("Output")
     stframe = st.empty()
     
-    # Input for Video
-    video_file = st.sidebar.file_uploader("Upload a Video", type=['mp4', 'mov', 'avi', 'asf', 'm4v'])
+    #Input for Video
+    video_file = st.sidebar.file_uploader("Upload a Video",type=['mp4','mov','avi','asf','m4v'])
     st.sidebar.markdown("---")
     tffile = tempfile.NamedTemporaryFile(delete=False)
     
@@ -93,15 +95,15 @@ if app_mode == 'Run on Video':
     st.sidebar.markdown("**Input Video**")
     st.sidebar.video(tffile.name)
     
-    # Predict the video
+    # predict the video
     while vid.isOpened():
         ret, frame = vid.read()
         if not ret:
             break
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
         model = load_model()
         results = model(frame)
-        length = len(results.pred[0])
+        length = len(results.xyxy[0])
         output = np.squeeze(results.render())
-        text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>", unsafe_allow_html=True)
+        text.write(f"<h1 style='text-align: center; color:red;'>{length}</h1>",unsafe_allow_html = True)
         stframe.image(output)
